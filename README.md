@@ -72,6 +72,7 @@ AWS Lambda e Azure Function com poucos ajustes. Porém, dado o tempo de teste e 
 Com o jest instalado globalmente e a aplicação rodando:
 ```
 cd e2e-tests
+npm install
 npm run tests
 ```
 Testes de micro serviços ou serverless são amplamente debatidos na comunidade. Especialmente a aplicação de testes de aceitação, integração e testes unitários.

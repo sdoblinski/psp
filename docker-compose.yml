@@ -24,8 +24,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/transaction-queuer
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./transaction-queuer
+      dockerfile: ../node_app.dockerfile
     env_file: variables.env
     expose: 
       - 3000
@@ -40,8 +40,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/transaction-persister
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./transaction-persister
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - postgres
     env_file: variables.env
@@ -54,8 +54,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/transaction-cache-writer
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./transaction-cache-writer
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -68,8 +68,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/transaction-cache-reader
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./transaction-cache-reader
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -86,8 +86,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/playable-persister
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./playable-persister
+      dockerfile: ../node_app.dockerfile
     env_file: variables.env
     volumes:
       - ./playable-persister/:/usr/src/playable-persister
@@ -98,8 +98,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/playable-cache-writer
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./playable-cache-writer
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -112,8 +112,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/playable-cache-reader
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./playable-cache-reader
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -130,8 +130,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/fail-writer
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./fail-writer
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -144,8 +144,8 @@ services:
     restart: unless-stopped
     working_dir: /usr/src/fail-reader
     build:
-      context: .
-      dockerfile: node_app.dockerfile
+      context: ./fail-reader
+      dockerfile: ../node_app.dockerfile
     depends_on:
       - redis
     env_file: variables.env
@@ -160,9 +160,10 @@ services:
   gateway:
     container_name: gateway
     restart: unless-stopped
+    working_dir: /usr/src/gateway
     build:
-      context: .
-      dockerfile: gateway.dockerfile
+      context: ./gateway
+      dockerfile: ../gateway.dockerfile
     volumes:
       - ./gateway/:/usr/src/gateway
     env_file: variables.env
