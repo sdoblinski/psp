@@ -1,0 +1,175 @@
+version: '3'
+services:
+  postgres:
+    container_name: postgres
+    env_file: variables.env
+    expose:
+      - 5432
+    ports:
+      - 15432:5432
+    build:
+      context: .
+      dockerfile: postgres.dockerfile
+    networks:
+      - pagarme_network
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    networks:
+      - pagarme_network
+  transaction_queuer:
+    container_name: transaction_queuer
+    restart: unless-stopped
+    working_dir: /usr/src/transaction-queuer
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    env_file: variables.env
+    expose: 
+      - 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./transaction-queuer/:/usr/src/transaction-queuer
+    networks:
+      - pagarme_network
+  transaction_persister:
+    container_name: transaction_persister
+    restart: unless-stopped
+    working_dir: /usr/src/transaction-persister
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - postgres
+    env_file: variables.env
+    volumes:
+      - ./transaction-persister/:/usr/src/transaction-persister
+    networks:
+      - pagarme_network
+  transaction_cache_writer:
+    container_name: transaction_cache_write
+    restart: unless-stopped
+    working_dir: /usr/src/transaction-cache-writer
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    volumes:
+      - ./transaction-cache-writer/:/usr/src/transaction-cache-writer
+    networks:
+      - pagarme_network
+  transaction_cache_reader:
+    container_name: transaction_cache_reader
+    restart: unless-stopped
+    working_dir: /usr/src/transaction-cache-reader
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    expose: 
+      - 3010
+    ports:
+      - 3010:3010
+    volumes:
+      - ./transaction-cache-reader/:/usr/src/transaction-cache-reader
+    networks:
+      - pagarme_network
+  playable_persister:
+    container_name: playable_persister
+    restart: unless-stopped
+    working_dir: /usr/src/playable-persister
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    env_file: variables.env
+    volumes:
+      - ./playable-persister/:/usr/src/playable-persister
+    networks:
+      - pagarme_network
+  playable_cache_writer:
+    container_name: playable_cache_writer
+    restart: unless-stopped
+    working_dir: /usr/src/playable-cache-writer
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    volumes:
+      - ./playable-cache-writer/:/usr/src/playable-cache-writer
+    networks:
+      - pagarme_network
+  playable_cache_reader:
+    container_name: playable_cache_reader
+    restart: unless-stopped
+    working_dir: /usr/src/playable-cache-reader
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    expose: 
+      - 3020
+    ports:
+      - 3020:3020
+    volumes:
+      - ./playable-cache-reader/:/usr/src/playable-cache-reader
+    networks:
+      - pagarme_network
+  fail_writer:
+    container_name: fail_writer
+    restart: unless-stopped
+    working_dir: /usr/src/fail-writer
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    volumes:
+      - ./fail-writer/:/usr/src/fail-writer
+    networks:
+      - pagarme_network
+  fail_reader:
+    container_name: fail_reader
+    restart: unless-stopped
+    working_dir: /usr/src/fail-reader
+    build:
+      context: .
+      dockerfile: node_app.dockerfile
+    depends_on:
+      - redis
+    env_file: variables.env
+    expose: 
+      - 3030
+    ports:
+      - 3030:3030
+    volumes:
+      - ./fail-reader/:/usr/src/fail-reader
+    networks:
+      - pagarme_network
+  gateway:
+    container_name: gateway
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: gateway.dockerfile
+    volumes:
+      - ./gateway/:/usr/src/gateway
+    env_file: variables.env
+    ports:
+      - 8080:8080
+    networks:
+      - pagarme_network
+networks:
+  pagarme_network:
+    driver: bridge
