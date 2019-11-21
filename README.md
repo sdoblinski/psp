@@ -14,7 +14,7 @@ A entrada de transações vai para uma fila de processamento. Todos os gets bate
 
 Os serviços de persistência de dados e geração de cache são desacoplados e reagem a mensagens, não requisições http. Por isso podem ser facilmente escalados de acordo com a necessidade.
 
-O coração dos dados é o Postgres. A partir dele são gerados os caches. Em caso de falha de inserção no Postgres, a requisição vai para uma fila de fails. A partir dessa fila podem ser feitas novas tentativas e análise de erros (dead letter queue e política de retries estão fora do escopo desse teste). Adicionei endpoints de leitura dessas listas apenas para facilitar a leitura. Para testar basta provocar um erro na inserção do banco, por exemplo derrubar o container de Postgres, ou provocar um erro manualmente nos serviços de persistência.
+O coração dos dados é o Postgres. A partir dele são gerados os caches. Em caso de falha de inserção no Postgres, a requisição vai para uma fila de fails. A partir dessa fila podem ser feitas novas tentativas e análise de erros (acho que dead letter queue e política de retries estão um pouco além do escopo desse teste ;). Adicionei endpoints dessas listas apenas para facilitar a leitura. Para testar basta causar um erro na inserção do banco, por exemplo derrubar o container de Postgres, ou provocar um erro manualmente nos serviços de persistência.
 
 A arquitetura foi pensada para rodar em orquestradores que abstraem a escalabilidade como Kubernetes ou Docker Swarm, com um mensageria robusta como Kafka. Ou também serverless como 
 AWS Lambda e Azure Function com poucos ajustes. Porém, dado o tempo de teste e simplicidade de demonstração, usei Docker Compose e Redis como mensageria - essa não é uma sugestão de infra de produção.
@@ -24,11 +24,11 @@ AWS Lambda e Azure Function com poucos ajustes. Porém, dado o tempo de teste e 
 
 * Gateway - proxy reverso simples
 
-* Transaction Queuer - recebe a requisição de transação e coloca na fila de transações recebidas. Em caso de falha manda para fila de fails
+* Transaction Queuer - recebe a requisição de transação e coloca na fila de transações recebidas
 
 * Transaction Persister - pega transação da fila de transações recebidas, persiste e coloca na fila de transações persistidas. Em caso de falha manda para fila de fails
 
-* Playable Persister - pega transação da fila de transações persistidas, processa playable, persiste e coloca na fila de playables persistidos
+* Playable Persister - pega transação da fila de transações persistidas, processa playable, persiste e coloca na fila de playables persistidos. Em caso de falha manda para fila de fails
 
 * Transaction Cache Writer - pega transação da fila de transações persistidas e grava cache por usuário
 
@@ -40,7 +40,7 @@ AWS Lambda e Azure Function com poucos ajustes. Porém, dado o tempo de teste e 
 
 * Fail Writer - pega da lista de falhas e grava em uma lista simples do Redis, por transações ou playables
 
-* Fail Reader - lê lista de fails por transações ou playables (endpoint ilustrativo, apenas para facilitar o acesso de leitura dessas listas)
+* Fail Reader - lê lista de fails por transações ou playables (endpoint ilustrativo, apenas para facilitar o acesso a essas listas)
     
 
 ## Tecnologias usadas
@@ -83,6 +83,6 @@ No meu dia a dia, se estou trabalhando em uma arquitetura de micro serviços, co
 
 Da maneira como estruturei essa aplicação, não achei relevante fazer teste unitário para algum arquivo. Sei que essa decisão é discutível e não pretendo ter a última palavra nesse assunto (:
 
-Falando especificamente do código apresentado aqui, considero que o arquivo que contém mais lógica é o que processa playables (`playable-persister/src/playable/create.js`). Porém, acabo testando o comportamento dele ao testar o contrato e os valores de mensageria.
+Falando especificamente do código apresentado aqui, considero que o arquivo que contém mais lógica é o que processa playables (`playable-persister/src/playable/create.js`). Porém, acabo testando o comportamento dele ao testar o contrato e os valores de mensageria nos testes end to end.
 
-Nos testes "end to end" eu valido cenários básicos de sucesso e erros, contratos das integrações e mensagens entre serviços. Utilizei o Observable do RxJS para receber e testar as mensagens assincronamente.
+Nos testes end to end eu valido cenários básicos de sucesso e erros, contratos das integrações e mensagens entre serviços. Utilizei o Observable do RxJS para receber e testar as mensagens assincronamente.
