@@ -21,6 +21,9 @@ const validBody = {
   card_ccv: '999'
 }
 
+const debitCardFee = 0.03
+const creditCardFee = 0.05
+
 describe('Scenario: Transaction Process Success', () => {
   test('Debit Card Transaction shoud return statusCode 201 with correct messages', async (done) => {
     let messagesReceived = 0
@@ -75,7 +78,8 @@ describe('Scenario: Transaction Process Success', () => {
         expect(messages.playablePersisted.status).toEqual('paid')
         expect(messages.transactionPersisted.value).toEqual(validBody.value.toString())
         expect(messages.playablePersisted).toHaveProperty('payment_date')
-
+        // assertion added on November 27th
+        expect(messages.playablePersisted.value).toEqual((validBody.value - (validBody.value * debitCardFee)).toFixed(2))
         done()
       }
     })
@@ -141,6 +145,8 @@ describe('Scenario: Transaction Process Success', () => {
         expect(messages.playablePersisted.status).toEqual('waiting_funds')
         expect(messages.transactionPersisted.value).toEqual(validBody.value.toString())
         expect(messages.playablePersisted).toHaveProperty('payment_date')
+        // assertion added on November 27th
+        expect(messages.playablePersisted.value).toEqual((validBody.value - (validBody.value * creditCardFee)).toFixed(2))
 
         done()
       }
