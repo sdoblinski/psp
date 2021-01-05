@@ -9,7 +9,7 @@
   "author": "Simei Doblinski",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "express": "^4.17.1",
     "ioredis": "^4.14.1",
     "rxjs": "^6.5.3"
